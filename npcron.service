@@ -3,24 +3,11 @@ Description=NPC-Cron Backend Service
 After=network.target
 
 [Service]
-# User and Group
 User=kevin
 Group=kevin
-
-# Directory to run the service from
 WorkingDirectory=/home/kevin/npcron/backend
-
-# Environment variables
-# This assumes you have a virtual environment at /home/kevin/npcron/.venv
 Environment="PYTHONPATH=/home/kevin/npcron/backend"
-# Uncomment and set if you have specific env vars
-# Environment="DATABASE_URL=sqlite:///./data/npcron.db"
-
-# Execution command
-# We use the path to the uvicorn executable inside the virtualenv
-ExecStart=/home/kevin/npcron/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers
-
-# Restart policy
+ExecStart=/home/kevin/npcron/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 

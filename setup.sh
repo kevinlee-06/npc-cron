@@ -13,10 +13,20 @@ SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 
 echo "Setting up $SERVICE_NAME..."
 
-# Step 1: Create virtual environment
+# Step 1: Check requirements and create virtual environment
+echo "Checking dependencies..."
+if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 is not installed."
+    exit 1
+fi
+
 if [ ! -d "$VENV_DIR" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv "$VENV_DIR"
+    echo "Creating virtual environment at $VENV_DIR..."
+    python3 -m venv "$VENV_DIR" || {
+        echo "Error: Failed to create virtual environment."
+        echo "On Debian/Ubuntu, run: sudo apt-get install python3-venv"
+        exit 1
+    }
 fi
 
 # Step 2: Install dependencies
