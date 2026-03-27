@@ -150,3 +150,7 @@ cython_debug/
 /data/*.db
 /data/*.sqlite3
 /media/
+
+# Systemd service file
+
+npcron.service
