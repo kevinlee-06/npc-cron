@@ -20,19 +20,28 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+# Check for venv/pip system packages
+if ! python3 -m venv --help &> /dev/null; then
+    echo "Error: python3-venv is not installed."
+    echo "Run: sudo apt-get install python3-venv"
+    exit 1
+fi
+
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment at $VENV_DIR..."
     python3 -m venv "$VENV_DIR" || {
         echo "Error: Failed to create virtual environment."
-        echo "On Debian/Ubuntu, run: sudo apt-get install python3-venv"
         exit 1
     }
 fi
 
 # Step 2: Install dependencies
 echo "Installing dependencies..."
-"$VENV_DIR/bin/pip" install --upgrade pip
-"$VENV_DIR/bin/pip" install -r "$REQUIREMENTS_FILE"
+# Ensure pip is actually there (useful on some Linux distros)
+"$PYTHON_BIN" -m ensurepip --upgrade &> /dev/null || echo "Info: ensurepip not found, skipping..."
+
+"$PYTHON_BIN" -m pip install --upgrade pip
+"$PYTHON_BIN" -m pip install -r "$REQUIREMENTS_FILE"
 
 # Step 3: Create systemd service file
 echo "Generating systemd service file..."
