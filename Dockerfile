@@ -33,16 +33,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy installed python packages from builder
 COPY --from=builder /install /usr/local
 
-# Create a non-root user and group
-RUN groupadd -r npcron && useradd -r -g npcron -G audio,video npcron
+# Create a non-root user and group with specific UID/GID to match host user
+RUN groupadd -g 1000 npcron && \
+    useradd -u 1000 -r -g npcron -G audio,video npcron
 
 # Create necessary directories and set permissions
 RUN mkdir -p /app/data /app/media && \
-    chown -R npcron:npcron /app
+    chown -R npcron:npcron /app /app/data /app/media
 
 # Copy application files
-COPY backend /app/backend
-COPY frontend /app/frontend
+COPY --chown=npcron:npcron backend /app/backend
+COPY --chown=npcron:npcron frontend /app/frontend
 
 # Switch to non-root user
 USER npcron
