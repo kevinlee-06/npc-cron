@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等一下我現在沒空</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=8">
+</head>
+
+<body>
+    <div id="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>沒空</h2>
+            </div>
+            <nav>
+                <button onclick="navigate('dashboard')">控制中心</button>
+                <button onclick="navigate('assets')">音檔與 TTS</button>
+                <button onclick="navigate('schedules')" class="active">排程設定</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header>
+                <div
+                    style="position: absolute; left: 50%; transform: translateX(-50%); display:flex; flex-direction:column; align-items:center; width: 40%;">
+                    <h1 id="page-title">控制中心</h1>
+                </div>
+                <div class="header-actions">
+                </div>
+            </header>
+            <div class="content-area">
+                <div id="content" class="content-wrapper">
+                    <!-- Dynamic Content Goes Here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- View Templates -->
+    <template id="tpl-dashboard">
+        <h3 class="section-title" style="margin-top:0;">系統控制</h3>
+        <div class="card">
+            <div class="row">
+                <div class="row-label">
+                    <span class="title">正在播放控制</span>
+                    <span class="subtitle">如遇到異常可手動中斷所有輸出</span>
+                </div>
+                <button class="btn" style="min-width: 140px;" onclick="stopAllAudio()">停止播放</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>即時插播 (Instant Play)</h3>
+            <p>點擊下方音檔即可強制系統立即以預設音效卡廣播。</p>
+            <div id="instant-play-list">
+                <!-- Play buttons rendered here -->
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="row">
+                <div class="row-label">
+                    <span class="title">重設資料庫</span>
+                    <span class="subtitle">永久清空所有音檔、排程與休假設定（無法復原）</span>
+                </div>
+                <button class="btn btn-danger" onclick="clearDatabase()">重設系統</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-assets">
+        <h3 class="section-title" style="margin-top:0;">新增音檔</h3>
+        <form class="card" onsubmit="event.preventDefault(); uploadAsset();">
+            <div class="row">
+                <div class="row-label">
+                    <span class="title">從本機上傳</span>
+                    <span class="subtitle">支援 MP3/WAV 格式</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span id="upload-filename"
+                        style="font-size:0.82rem; color:var(--text-muted); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">未選擇檔案</span>
+                    <button type="button" class="btn"
+                        onclick="document.getElementById('upload-file').click()">瀏覽...</button>
+                    <input type="file" id="upload-file" accept=".mp3,.wav" style="display:none;"
+                        onchange="document.getElementById('upload-filename').textContent = this.files[0]?.name || '未選擇檔案'">
+                </div>
+            </div>
+            <div class="row row-end">
+                <button type="submit" class="btn btn-primary">上傳</button>
+            </div>
+        </form>
+
+        <h3 class="section-title">文字轉語音 (Edge-TTS)</h3>
+        <form class="card" onsubmit="event.preventDefault(); generateTTS();">
+            <div class="row">
+                <div class="row-label">
+                    <span class="title">AI 語音產生器</span>
+                    <span class="subtitle">將文字自動產生為音檔並存入資料庫</span>
+                </div>
+                <input type="text" id="tts-text" placeholder="輸入要念出的文字" required class="input-control">
+            </div>
+            <div class="row row-end">
+                <button type="submit" class="btn btn-primary">產生語音</button>
+            </div>
+        </form>
+
+        <h3 class="section-title">資源清單</h3>
+        <div class="card" id="assets-list">
+            <!-- Assets rendered here -->
+        </div>
+    </template>
+
+    <template id="tpl-schedules">
+        <h3 class="section-title" style="margin-top:0;">時間排程</h3>
+        <form class="card" id="schedule-form" onsubmit="event.preventDefault(); createSchedule();">
+            <div class="row">
+                <span class="title">廣播音源</span>
+                <select id="sched-sound" required class="input-control"></select>
+            </div>
+            <div class="row">
+                <span class="title">觸發時間</span>
+                <input type="time" id="sched-time" required class="input-control">
+            </div>
+            <div class="row">
+                <span class="title">每週執行日</span>
+                <div class="checkbox-group" id="sched-days-group">
+                    <label class="checkbox-item"><input type="checkbox" value="1" checked> 一</label>
+                    <label class="checkbox-item"><input type="checkbox" value="2" checked> 二</label>
+                    <label class="checkbox-item"><input type="checkbox" value="3" checked> 三</label>
+                    <label class="checkbox-item"><input type="checkbox" value="4" checked> 四</label>
+                    <label class="checkbox-item"><input type="checkbox" value="5" checked> 五</label>
+                    <label class="checkbox-item"><input type="checkbox" value="6" checked> 六</label>
+                    <label class="checkbox-item"><input type="checkbox" value="7" checked> 日</label>
+                </div>
+            </div>
+            <div class="row row-end">
+                <button type="submit" class="btn btn-primary">套用排程</button>
+            </div>
+        </form>
+
+        <h3 class="section-title">現有排程</h3>
+        <div class="card" id="schedules-list">
+            <!-- Schedules rendered here -->
+        </div>
+
+        <h3 class="section-title">休假防呆 (Exclusions)</h3>
+        <form class="card" id="exclusion-form" onsubmit="event.preventDefault(); addExclusion();">
+            <div class="row">
+                <span class="title">目標日期</span>
+                <input type="date" id="ex-date" required class="input-control">
+            </div>
+            <div class="row">
+                <span class="title">停播原因</span>
+                <input type="text" id="ex-reason" placeholder="如：國定假日" required class="input-control">
+            </div>
+            <div class="row row-end">
+                <button type="submit" class="btn btn-primary">加入休假日</button>
+            </div>
+        </form>
+
+        <h3 class="section-title">已設定的排除日</h3>
+        <div class="card" id="exclusions-list">
+            <!-- Exclusions rendered here -->
+        </div>
+    </template>
+
+
+    <!-- App Logic -->
+    <script src="/static/app.js?v=8"></script>
+</body>
+
+</html>
