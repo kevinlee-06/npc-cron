@@ -1,7 +1,8 @@
 import json
 import os
 
-SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "settings.json")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SETTINGS_FILE = os.path.join(BASE_DIR, "data", "settings.json")
 
 def get_settings():
     if os.path.exists(SETTINGS_FILE):
